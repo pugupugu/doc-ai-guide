@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문서프롬프트</title>
+<style>
+:root{--bg:#fff;--ink:#1f1b16;--muted:#7a7268;--line:#e6e0d6;--soft:#faf6ef;--primary:#d9730d;--dark:#26221d;--on-dark:#f4efe6;--danger:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a17;--ink:#f1ece3;--muted:#a69d90;--line:#3a352e;--soft:#26221d;--dark:#12100e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Pretendard","Malgun Gothic",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:18px;cursor:pointer;background:none;border:0;color:var(--ink);font-family:inherit}
+main{max-width:1200px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:18px;margin:28px 0 10px}
+.sub{color:var(--muted);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--bg);text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+.card:hover{border-color:var(--primary);background:var(--soft)}
+.card b{display:block;font-size:16px;margin:6px 0 2px}
+.card span{color:var(--muted);font-size:13px}
+.card .ic{font-size:24px}
+.btn{height:40px;padding:0 18px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.aside{position:static!important}}
+.tabs{position:sticky;top:56px;z-index:4;background:var(--bg);display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:8px}
+.tab{padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font:inherit;font-size:13px}
+.prog{margin-left:auto;color:var(--muted);font-size:13px}
+fieldset{border:0;padding:0;margin:0 0 8px;scroll-margin-top:120px}
+legend{font-size:18px;font-weight:700;padding:0;margin:24px 0 8px}
+.q{margin:0 0 18px}
+.q label.l{display:block;font-weight:600;margin-bottom:4px}
+.req{color:var(--danger);font-size:12px;margin-left:6px}
+.opt{color:var(--muted);font-size:12px;margin-left:6px}
+.help{color:var(--muted);font-size:13px;margin:0 0 6px}
+input[type=text],input[type=number],textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;background:var(--bg);color:var(--ink)}
+input:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--primary) 25%,transparent);border-color:var(--primary)}
+textarea{min-height:84px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font:inherit;font-size:14px}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.warn{background:#fff4e5;color:#7a4a00;border-radius:8px;padding:10px 12px;font-size:13px;margin:8px 0 14px}
+@media(prefers-color-scheme:dark){.warn{background:#3a2c14;color:#f0cf9a}}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--primary);background:var(--soft)}
+.files{list-style:none;margin:12px 0 0;padding:0;border:1px solid var(--line);border-radius:12px}
+.files li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.files li:last-child{border:0}
+.files .n{flex:0 0 38%;font-size:13px;word-break:break-all}
+.aside{position:sticky;top:130px}
+.prev{background:var(--dark);color:var(--on-dark);border-radius:14px;padding:16px}
+.prev small{color:#bfb6a6}
+.prev pre{margin:8px 0 0;max-height:58vh;overflow:auto;white-space:pre-wrap;word-break:break-word;font:12.5px/1.6 Consolas,monospace;background:rgba(0,0,0,.18);border-radius:8px;padding:12px}
+.actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.hist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px}
+.hist li{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.hist li:last-child{border:0}
+.hist .t{flex:1;cursor:pointer}
+.hist .t small{display:block;color:var(--muted)}
+.result{width:100%;min-height:55vh;border:1px solid var(--line);border-radius:12px;padding:16px;font:13.5px/1.7 Consolas,"Malgun Gothic",monospace;background:var(--soft);color:var(--ink);resize:vertical}
+.resultbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.btn.big{height:52px;font-size:17px;padding:0 28px}
+.steps{padding-left:22px;margin:0 0 16px}
+.steps li{margin:4px 0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="bar"><button class="logo" id="logo">📄 문서프롬프트</button><button class="btn sm" id="helpBtn">사용 방법</button></div></header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<dialog id="help" style="max-width:520px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink)">
+<h2 style="margin-top:0">사용 방법</h2>
+<ol>
+<li>만들 문서 종류를 고릅니다.</li>
+<li>질문에 답합니다. 오른쪽에 AI에게 줄 지시서가 실시간으로 만들어집니다.</li>
+<li>필요하면 참고 파일을 올리고 파일마다 쓰는 방법을 적습니다.</li>
+<li><b>결과 보기 · 복사하기</b>를 누르고 <b>전체 복사</b>를 누릅니다.</li>
+<li>ChatGPT·Claude 같은 AI 채팅창에 붙여넣고 보냅니다. AI가 되물으면 답해 주세요.</li>
+<li>이미지·PDF·엑셀 같은 파일을 올렸다면 AI 채팅창에 직접 첨부합니다. (ZIP·.md 내려받기는 보조 수단입니다.)</li>
+</ol>
+<p class="warn">고객 정보·개인정보·비밀번호가 담긴 자료는 올리지 마세요. 파일은 나중에 외부 AI에 올라갑니다. 이 페이지는 입력 내용을 서버로 보내지 않고, 기록은 이 브라우저에만 저장됩니다.</p>
+<form method="dialog"><button class="btn primary">닫기</button></form>
+</dialog>
+
+<script>
+const DOC_TYPES = /*__DOC_TYPES__*/[];
+const ICONS = {ppt:"📊",excel:"📗",word:"📝",email:"✉️",hwp:"🏛️",pdf:"📕",md:"🗒️",diagram:"🔀",icon:"🎨",image:"🖼️"};
+const MAIN = ["ppt","excel","word","email"];
+const SECTIONS = [["purpose","목적과 배경"],["audience","읽는 사람"],["content","구성과 내용"],["design","디자인과 형식"],["rules","꼭 지킬 것 / 피할 것"]];
+const STORE = "docprompt:records";
+const $ = (s) => document.querySelector(s);
+
+// 화면은 textContent로만 채운다 (입력한 글이 HTML로 해석되지 않음)
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function toast(m) {
+  const t = $("#toast");
+  t.textContent = m;
+  t.classList.add("show");
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ---------- 기록 (이 브라우저에만 저장) ---------- */
+function loadRecords() { try { return JSON.parse(localStorage.getItem(STORE) || "[]"); } catch (e) { return []; } }
+function saveRecords(r) { try { localStorage.setItem(STORE, JSON.stringify(r)); return true; } catch (e) { return false; } }
+
+/* ---------- 프롬프트 만들기 ---------- */
+const isAnswered = (v) => Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.trim() !== "";
+const fmt = (v) => Array.isArray(v) ? v.join(", ") : v.trim();
+const bullet = (l, v) => v.includes("\n") ? "- " + l + ":\n" + v.split("\n").map((x) => "  " + x).join("\n") : "- " + l + ": " + v;
+const allQ = (doc) => doc.groups.flatMap((g) => g.questions);
+const docTitle = (a) => (typeof a.title === "string" && a.title.trim()) ? a.title.trim() : "제목 없음";
+
+function buildCore(doc, a) {
+  const lines = (sec) => allQ(doc).filter((q) => q.section === sec && q.id !== "title" && isAnswered(a[q.id])).map((q) => bullet(q.promptLabel, fmt(a[q.id])));
+  const parts = [["역할", ["너는 " + doc.name + " 작성 전문가야. 아래 요구사항에 맞춰 바로 쓸 수 있는 " + doc.name + " 초안을 만들어 줘."]]];
+  for (const [id, title] of SECTIONS) parts.push([title, lines(id)]);
+  parts.push(["결과물 요구사항", [
+    "- 최종 결과물 형식: " + doc.output,
+    "- 불확실한 내용은 지어내지 말고 [확인 필요]로 표시할 것",
+    "- 시작하기 전에 부족한 정보가 있으면 먼저 질문해 줄 것",
+    "- 완성 후 위 요구사항을 지켰는지 점검 목록을 덧붙일 것"
+  ]]);
+  let n = 0;
+  const body = parts.filter(([, l]) => l.length).map(([h, l]) => "## " + (++n) + ". " + h + "\n" + l.join("\n")).join("\n\n");
+  return "# 초안 생성 프롬프트: " + docTitle(a) + "\n\n" + body;
+}
+const cell = (s) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
+function attachSection(files) {
+  if (!files.length) return "";
+  let md = "## 첨부자료 사용 방법\n함께 올린 첨부 파일을 아래에 적힌 방법대로 활용해 줘.\n\n| 파일 | 사용 방법 |\n|---|---|\n" +
+    files.map((f) => "| 첨부자료/" + cell(f.name) + " | " + cell(f.usage.trim() || "참고 자료로 활용") + " |").join("\n");
+  const withText = files.filter((f) => f.text);
+  if (withText.length) {
+    md += "\n\n## 첨부자료 내용 (파일에서 읽어낸 내용)\n\n" +
+      withText.map((f) => "### " + f.name + "\n\n" + f.text + (f.truncated ? "\n\n(이하 생략, 원본 파일 참고)" : "")).join("\n\n");
+  }
+  return md;
+}
+
+/* ---------- 간단한 ZIP 만들기 (무압축) : 서버·라이브러리 필요 없음 ---------- */
+const CRC_TABLE = (function () {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) { let c = i; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[i] = c >>> 0; }
+  return t;
+})();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(entries) {
+  const enc = new TextEncoder(), chunks = [], central = [];
+  let off = 0;
+  const now = new Date();
+  const dt = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const tm = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  for (const e of entries) {
+    const name = enc.encode(e.path), crc = crc32(e.data), size = e.data.length;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, tm, true); h.setUint16(12, dt, true); h.setUint32(14, crc, true); h.setUint32(18, size, true);
+    h.setUint32(22, size, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(h.buffer), name, e.data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(10, 0, true); c.setUint16(12, tm, true); c.setUint16(14, dt, true); c.setUint32(16, crc, true);
+    c.setUint32(20, size, true); c.setUint32(24, size, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + size;
+  }
+  const cdSize = central.reduce((s, x) => s + x.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+  return new Blob(chunks.concat(central, [new Uint8Array(end.buffer)]), { type: "application/zip" });
+}
+function download(blob, name) {
+  const a = el("a", { href: URL.createObjectURL(blob), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+const safeName = (s) => s.replace(/[\\/:*?"<>|]/g, "_").trim().slice(0, 60) || "문서";
+
+/* ---------- 화면: 처음 ---------- */
+let state = null;
+function home() {
+  state = null;
+  const app = $("#app");
+  app.replaceChildren();
+  app.append(el("h1", {}, "어떤 문서를 만들까요?"), el("p", { class: "sub" }, "고르면 바로 질문 화면으로 넘어가요. 답을 다 쓰면 AI에 올릴 파일을 만들어 드려요."));
+  const card = (d) => el("button", { class: "card", onclick: () => openForm(d.id) }, el("div", { class: "ic" }, ICONS[d.id] || "📄"), el("b", {}, d.name), el("span", {}, d.description));
+  app.append(el("div", { class: "grid" }, DOC_TYPES.filter((d) => MAIN.includes(d.id)).map(card)));
+  app.append(el("h2", {}, "다른 문서"), el("div", { class: "grid" }, DOC_TYPES.filter((d) => !MAIN.includes(d.id)).map(card)));
+  const recs = loadRecords().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  if (recs.length) {
+    app.append(el("h2", {}, "내 기록 (이 브라우저에만 저장돼요)"));
+    app.append(el("ul", { class: "hist" }, recs.map((r) => {
+      const d = DOC_TYPES.find((x) => x.id === r.docType);
+      return el("li", {},
+        el("div", { class: "t", onclick: () => openForm(r.docType, r.id) }, el("b", {}, docTitle(r.answers)), el("small", {}, (d ? d.name : r.docType) + " · " + new Date(r.updatedAt).toLocaleString("ko-KR"))),
+        el("button", { class: "btn sm", onclick: () => openForm(r.docType, r.id, true) }, "복사해서 새로"),
+        el("button", { class: "btn sm", onclick: () => { if (confirm("이 기록을 삭제할까요?")) { saveRecords(loadRecords().filter((x) => x.id !== r.id)); home(); } } }, "삭제"));
+    })));
+  }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 화면: 질문 ---------- */
+function openForm(docId, recId, asCopy) {
+  const doc = DOC_TYPES.find((d) => d.id === docId);
+  const rec = recId ? loadRecords().find((r) => r.id === recId) : null;
+  state = {
+    doc: doc,
+    id: (rec && !asCopy) ? rec.id : null,
+    answers: rec ? JSON.parse(JSON.stringify(rec.answers)) : {},
+    files: rec ? (rec.files || []).map((f) => Object.assign({}, f, { file: null })) : [],
+    dirty: false
+  };
+  renderForm();
+}
+function missing() { return allQ(state.doc).filter((q) => q.required && !isAnswered(state.answers[q.id])); }
+function promptMd() { return [buildCore(state.doc, state.answers), attachSection(state.files)].filter(Boolean).join("\n\n") + "\n"; }
+function updatePreview() {
+  $("#pv").textContent = promptMd();
+  const m = missing(), total = allQ(state.doc).filter((q) => q.required).length;
+  $("#prog").textContent = "필수 " + (total - m.length) + " / " + total;
+  for (const b of document.querySelectorAll(".needs-complete")) b.disabled = m.length > 0;
+  $("#hint").textContent = m.length ? "꼭 답해야 하는 질문 " + m.length + "개가 남았어요 (" + m.map((q) => q.label).join(", ") + ")." : "";
+}
+function field(q) {
+  const a = state.answers;
+  const set = (v) => { a[q.id] = v; state.dirty = true; updatePreview(); };
+  let input;
+  if (q.type === "text" || q.type === "number") {
+    input = el("input", { type: q.type === "number" ? "number" : "text", id: "q-" + q.id, placeholder: q.placeholder, value: a[q.id] || "", oninput: (e) => set(e.target.value) });
+  } else if (q.type === "textarea") {
+    input = el("textarea", { id: "q-" + q.id, placeholder: q.placeholder, oninput: (e) => set(e.target.value) });
+    input.value = a[q.id] || "";
+  } else {
+    const multi = q.type === "multiselect";
+    const wrap = el("div", { class: "chips" });
+    const paint = () => {
+      wrap.replaceChildren(...q.options.map((o) => {
+        const on = multi ? (a[q.id] || []).includes(o) : a[q.id] === o;
+        return el("button", { type: "button", class: "chip" + (on ? " on" : ""), onclick: () => {
+          if (multi) { const s = new Set(a[q.id] || []); if (s.has(o)) s.delete(o); else s.add(o); set(Array.from(s)); }
+          else set(a[q.id] === o ? "" : o);
+          paint();
+        } }, o);
+      }));
+    };
+    paint();
+    input = wrap;
+  }
+  return el("div", { class: "q" },
+    el("label", { class: "l", for: "q-" + q.id }, q.label, el("span", { class: q.required ? "req" : "opt" }, q.required ? "필수" : "선택")),
+    q.help ? el("p", { class: "help" }, q.help) : null,
+    input);
+}
+async function addFiles(list) {
+  for (const f of list) {
+    const item = { name: f.name, size: f.size, usage: "", file: f, text: "", truncated: false };
+    if (/\.(txt|md|csv|tsv|json)$/i.test(f.name) && f.size < 2000000) {
+      const t = await f.text();
+      item.text = t.length > 30000 ? t.slice(0, 30000) : t;
+      item.truncated = t.length > 30000;
+    }
+    if (state.files.some((x) => x.name === item.name)) item.name = item.name.replace(/(\.[^.]*)?$/, " (" + (state.files.length + 1) + ")$1");
+    state.files.push(item);
+  }
+  state.dirty = true;
+  paintFiles();
+  updatePreview();
+}
+function paintFiles() {
+  const ul = $("#files");
+  if (!ul) return;
+  ul.replaceChildren(...state.files.map((f, i) => el("li", {},
+    el("span", { class: "n" }, f.name),
+    el("input", { type: "text", placeholder: "예) 표지 이미지로 사용, 이 표의 숫자 활용", value: f.usage, oninput: (e) => { f.usage = e.target.value; state.dirty = true; updatePreview(); } }),
+    el("button", { class: "btn sm", onclick: () => { state.files.splice(i, 1); paintFiles(); updatePreview(); } }, "삭제"))));
+  ul.style.display = state.files.length ? "" : "none";
+}
+function renderForm() {
+  const doc = state.doc, app = $("#app");
+  app.replaceChildren();
+  const tabs = el("div", { class: "tabs" },
+    doc.groups.map((g) => el("button", { class: "tab", onclick: () => document.getElementById("g-" + g.id).scrollIntoView({ behavior: "smooth", block: "start" }) }, g.title)),
+    el("span", { class: "prog", id: "prog" }));
+  const form = el("div", {});
+  for (const g of doc.groups) {
+    const fs = el("fieldset", { id: "g-" + g.id }, el("legend", {}, g.title));
+    if (g.attachments) {
+      const picker = el("input", { type: "file", multiple: true, style: "display:none", onchange: (e) => { addFiles(Array.from(e.target.files)); e.target.value = ""; } });
+      const drop = el("div", { class: "drop",
+        onclick: () => picker.click(),
+        ondragover: (e) => { e.preventDefault(); drop.classList.add("over"); },
+        ondragleave: () => drop.classList.remove("over"),
+        ondrop: (e) => { e.preventDefault(); drop.classList.remove("over"); addFiles(Array.from(e.dataTransfer.files)); } },
+        "파일을 여기로 끌어다 놓거나 눌러서 선택하세요");
+      fs.append(
+        el("p", { class: "warn" }, "⚠️ 고객 정보, 개인정보, 비밀번호 등 민감한 자료는 올리지 마세요. 이 파일들은 나중에 외부 AI에 올라갑니다."),
+        drop, picker,
+        el("ul", { class: "files", id: "files" }),
+        el("p", { class: "help", style: "margin-top:8px" }, "텍스트·CSV·MD 파일은 내용이 지시서에 함께 들어가요. 엑셀·워드·이미지·PDF는 파일만 ZIP에 담기고, 어디에 쓸지 한 줄로 적어 두면 돼요."));
+    } else {
+      fs.append(...g.questions.map(field));
+    }
+    form.append(fs);
+  }
+  const aside = el("aside", { class: "aside" },
+    el("div", { class: "prev" }, el("small", {}, "미리보기 · 초안생성프롬프트.md"), el("pre", { id: "pv" })),
+    el("div", { class: "actions" },
+      el("button", { class: "btn primary needs-complete", onclick: renderResult }, "결과 보기 · 복사하기 →"),
+      el("button", { class: "btn", onclick: save }, "임시 저장"),
+      el("button", { class: "btn", onclick: () => { if (!state.dirty || confirm("저장하지 않은 내용이 사라져요. 나갈까요?")) home(); } }, "← 처음으로"),
+      el("p", { class: "help", id: "hint" })));
+  app.append(el("h1", {}, doc.name), el("p", { class: "sub" }, doc.description), tabs, el("div", { class: "layout" }, form, aside));
+  paintFiles();
+  updatePreview();
+  window.scrollTo(0, 0);
+}
+/* ---------- 화면: 결과 (복사해서 AI 채팅창에 붙여넣기) ---------- */
+async function copyText(text, area) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* 아래 방법으로 다시 시도 */ }
+  try { area.focus(); area.select(); const ok = document.execCommand("copy"); area.setSelectionRange(0, 0); return ok; } catch (e) { return false; }
+}
+function renderResult() {
+  save();
+  const app = $("#app"), md = promptMd();
+  app.replaceChildren();
+  const area = el("textarea", { class: "result", readonly: true, spellcheck: "false" });
+  area.value = md;
+  const copyBtn = el("button", { class: "btn primary big", onclick: async () => {
+    const ok = await copyText(md, area);
+    copyBtn.textContent = ok ? "✓ 복사했어요! AI 채팅창에 붙여넣으세요" : "복사하지 못했어요. 아래 글을 직접 드래그해서 복사해 주세요";
+    setTimeout(() => { copyBtn.textContent = "📋 전체 복사"; }, 3500);
+  } }, "📋 전체 복사");
+  const fileOnly = state.files.filter((f) => !f.text);
+  app.append(
+    el("h1", {}, "완성됐어요! 복사해서 AI에 붙여넣으세요"),
+    el("p", { class: "sub" }, docTitle(state.answers) + " · " + state.doc.name),
+    el("ol", { class: "steps" },
+      el("li", {}, el("b", {}, "아래 [전체 복사]"), "를 누릅니다."),
+      el("li", {}, "ChatGPT·Claude 같은 AI 채팅창을 열고 ", el("b", {}, "붙여넣기(Ctrl+V)"), " 한 뒤 보냅니다."),
+      el("li", {}, "AI가 부족한 정보를 물어보면 답해 주세요. 그러면 초안이 완성됩니다.")),
+    fileOnly.length ? el("p", { class: "warn" }, "📎 아래 파일은 글로 옮겨지지 않았어요. AI 채팅창에 직접 첨부해 주세요: " + fileOnly.map((f) => f.name).join(", ")) : null,
+    el("div", { class: "resultbar" }, copyBtn),
+    area,
+    el("p", { class: "warn" }, "고객 정보·개인정보·비밀번호가 들어 있지 않은지 한 번 더 확인하세요. 붙여넣은 내용은 외부 AI 서비스로 전송됩니다."),
+    el("div", { class: "resultbar" },
+      el("button", { class: "btn", onclick: () => renderForm() }, "← 답변 고치기"),
+      el("button", { class: "btn", onclick: () => download(new Blob([md], { type: "text/markdown" }), "초안생성프롬프트.md") }, ".md 파일로 받기"),
+      el("button", { class: "btn", onclick: exportZip }, "ZIP으로 받기 (첨부 파일 포함)"),
+      el("button", { class: "btn", onclick: home }, "새 문서 만들기")));
+  window.scrollTo(0, 0);
+}
+function save() {
+  const recs = loadRecords(), now = new Date().toISOString();
+  const files = state.files.map((f) => ({ name: f.name, size: f.size, usage: f.usage, text: f.text, truncated: f.truncated }));
+  let r = state.id && recs.find((x) => x.id === state.id);
+  if (r) { r.answers = state.answers; r.files = files; r.updatedAt = now; }
+  else {
+    r = { id: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()), docType: state.doc.id, answers: state.answers, files: files, createdAt: now, updatedAt: now };
+    recs.push(r);
+    state.id = r.id;
+  }
+  if (saveRecords(recs)) { state.dirty = false; toast("저장했어요"); } else toast("저장하지 못했어요 (브라우저 저장 공간 부족)");
+}
+async function exportZip() {
+  const folder = safeName(docTitle(state.answers)) + "_" + state.doc.name, enc = new TextEncoder();
+  const entries = [{ path: folder + "/초안생성프롬프트.md", data: enc.encode(promptMd()) }];
+  for (const f of state.files) if (f.file) entries.push({ path: folder + "/첨부자료/" + f.name, data: new Uint8Array(await f.file.arrayBuffer()) });
+  download(makeZip(entries), folder + ".zip");
+  save();
+  toast(state.files.some((f) => !f.file) ? "ZIP을 받았어요. 저장된 기록에서 불러온 파일은 다시 올려야 담겨요" : "ZIP을 받았어요");
+}
+
+$("#logo").onclick = () => { if (!state || !state.dirty || confirm("저장하지 않은 내용이 사라져요. 나갈까요?")) home(); };
+$("#helpBtn").onclick = () => $("#help").showModal();
+window.addEventListener("beforeunload", (e) => { if (state && state.dirty) { e.preventDefault(); e.returnValue = ""; } });
+home();
+</script>
+</body>
+</html>

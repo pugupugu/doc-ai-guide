@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문서프롬프트</title>
+<style>
+:root{--bg:#fff;--ink:#1f1b16;--muted:#7a7268;--line:#e6e0d6;--soft:#faf6ef;--primary:#d9730d;--dark:#26221d;--on-dark:#f4efe6;--danger:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a17;--ink:#f1ece3;--muted:#a69d90;--line:#3a352e;--soft:#26221d;--dark:#12100e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Pretendard","Malgun Gothic",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:18px;cursor:pointer;background:none;border:0;color:var(--ink);font-family:inherit}
+main{max-width:1200px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:18px;margin:28px 0 10px}
+.sub{color:var(--muted);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--bg);text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+.card:hover{border-color:var(--primary);background:var(--soft)}
+.card b{display:block;font-size:16px;margin:6px 0 2px}
+.card span{color:var(--muted);font-size:13px}
+.card .ic{font-size:24px}
+.btn{height:40px;padding:0 18px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.aside{position:static!important}}
+.tabs{position:sticky;top:56px;z-index:4;background:var(--bg);display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:8px}
+.tab{padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font:inherit;font-size:13px}
+.prog{margin-left:auto;color:var(--muted);font-size:13px}
+fieldset{border:0;padding:0;margin:0 0 8px;scroll-margin-top:120px}
+legend{font-size:18px;font-weight:700;padding:0;margin:24px 0 8px}
+.q{margin:0 0 18px}
+.q label.l{display:block;font-weight:600;margin-bottom:4px}
+.req{color:var(--danger);font-size:12px;margin-left:6px}
+.opt{color:var(--muted);font-size:12px;margin-left:6px}
+.help{color:var(--muted);font-size:13px;margin:0 0 6px}
+input[type=text],input[type=number],textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;background:var(--bg);color:var(--ink)}
+input:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--primary) 25%,transparent);border-color:var(--primary)}
+textarea{min-height:84px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font:inherit;font-size:14px}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.warn{background:#fff4e5;color:#7a4a00;border-radius:8px;padding:10px 12px;font-size:13px;margin:8px 0 14px}
+@media(prefers-color-scheme:dark){.warn{background:#3a2c14;color:#f0cf9a}}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--primary);background:var(--soft)}
+.files{list-style:none;margin:12px 0 0;padding:0;border:1px solid var(--line);border-radius:12px}
+.files li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.files li:last-child{border:0}
+.files .n{flex:0 0 38%;font-size:13px;word-break:break-all}
+.aside{position:sticky;top:130px}
+.prev{background:var(--dark);color:var(--on-dark);border-radius:14px;padding:16px}
+.prev small{color:#bfb6a6}
+.prev pre{margin:8px 0 0;max-height:58vh;overflow:auto;white-space:pre-wrap;word-break:break-word;font:12.5px/1.6 Consolas,monospace;background:rgba(0,0,0,.18);border-radius:8px;padding:12px}
+.actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.hist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px}
+.hist li{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.hist li:last-child{border:0}
+.hist .t{flex:1;cursor:pointer}
+.hist .t small{display:block;color:var(--muted)}
+.result{width:100%;min-height:55vh;border:1px solid var(--line);border-radius:12px;padding:16px;font:13.5px/1.7 Consolas,"Malgun Gothic",monospace;background:var(--soft);color:var(--ink);resize:vertical}
+.resultbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.btn.big{height:52px;font-size:17px;padding:0 28px}
+.steps{padding-left:22px;margin:0 0 16px}
+.steps li{margin:4px 0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="bar"><button class="logo" id="logo">📄 문서프롬프트</button><button class="btn sm" id="helpBtn">사용 방법</button></div></header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<dialog id="help" style="max-width:520px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink)">
+<h2 style="margin-top:0">사용 방법</h2>
+<ol>
+<li>만들 문서 종류를 고릅니다.</li>
+<li>질문에 답합니다. 오른쪽에 AI에게 줄 지시서가 실시간으로 만들어집니다.</li>
+<li>필요하면 참고 파일을 올리고 파일마다 쓰는 방법을 적습니다.</li>
+<li><b>결과 보기 · 복사하기</b>를 누르고 <b>전체 복사</b>를 누릅니다.</li>
+<li>ChatGPT·Claude 같은 AI 채팅창에 붙여넣고 보냅니다. AI가 되물으면 답해 주세요.</li>
+<li>이미지·PDF·엑셀 같은 파일을 올렸다면 AI 채팅창에 직접 첨부합니다. (ZIP·.md 내려받기는 보조 수단입니다.)</li>
+</ol>
+<p class="warn">고객 정보·개인정보·비밀번호가 담긴 자료는 올리지 마세요. 파일은 나중에 외부 AI에 올라갑니다. 이 페이지는 입력 내용을 서버로 보내지 않고, 기록은 이 브라우저에만 저장됩니다.</p>
+<form method="dialog"><button class="btn primary">닫기</button></form>
+</dialog>
+
+<script>
+const DOC_TYPES = [{"id":"ppt","name":"파워포인트","description":"보고서, 제안서, 발표 자료","output":".pptx 파일. 파일을 만들 수 없다면 장마다 제목, 본문, 시각 자료(차트·표·이미지) 지시, 발표자 노트를 정리해 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 임원진, 팀 전체, 고객사 담당자","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"slide_count","label":"몇 장 정도로 만들까요?","promptLabel":"장수","type":"number","section":"content","options":[],"required":true,"placeholder":"10","help":"발표 10분 기준 약 8~10장이에요."},{"id":"duration","label":"발표 시간","promptLabel":"발표 시간","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 10분","help":""},{"id":"structure","label":"장별 구성","promptLabel":"장별 구성","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 1장 표지 / 2장 요약 / 3~5장 실적 / 6장 다음 계획","help":"모르면 큰 흐름만 적어도 돼요. AI가 나머지를 채워요."},{"id":"key_message","label":"가장 전하고 싶은 한 마디","promptLabel":"핵심 메시지","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 3분기는 목표를 넘었고, 4분기엔 신규 시장에 집중한다","help":""},{"id":"numbers","label":"꼭 들어갈 숫자·데이터","promptLabel":"꼭 들어갈 숫자·데이터","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 매출 120억(전년 대비 +12%), 신규 고객 35곳","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"mood","label":"디자인 분위기","promptLabel":"디자인 분위기","type":"select","section":"design","options":["깔끔한 비즈니스","따뜻하고 친근한","강렬하고 임팩트 있는","미니멀"],"required":false,"placeholder":"","help":""},{"id":"colors","label":"쓰고 싶은 색","promptLabel":"쓰고 싶은 색","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 남색과 주황 포인트","help":""},{"id":"visuals","label":"넣고 싶은 시각 자료","promptLabel":"넣고 싶은 시각 자료","type":"multiselect","section":"design","options":["막대 차트","꺾은선 차트","원형 차트","표","아이콘","사진"],"required":false,"placeholder":"","help":""},{"id":"tone","label":"글 말투","promptLabel":"글 말투","type":"select","section":"design","options":["격식체 (~합니다)","개조식 (~함)","부드러운 존댓말","친근한 말투"],"required":false,"placeholder":"","help":""},{"id":"ratio","label":"화면 비율","promptLabel":"화면 비율","type":"select","section":"design","options":["16:9 (와이드)","4:3"],"required":false,"placeholder":"","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"excel","name":"엑셀","description":"데이터 정리, 예산표, 일정표","output":".xlsx 파일. 파일을 만들 수 없다면 시트별 표(마크다운 표)와 셀에 넣을 계산식을 정리해 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 팀원 전체, 재무팀","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"sheets","label":"시트 구성","promptLabel":"시트 구성","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 1. 월별 예산 / 2. 부서별 합계 / 3. 차트","help":""},{"id":"columns","label":"열(항목) 목록","promptLabel":"열(항목) 목록","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 월, 부서, 항목, 예산, 실제 사용액, 차이","help":""},{"id":"formulas","label":"필요한 계산","promptLabel":"필요한 계산","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 차이 = 예산 - 실제 사용액, 사용률(%)","help":""},{"id":"totals","label":"합계","promptLabel":"합계","type":"select","section":"content","options":["합계만","소계와 합계","필요 없음"],"required":false,"placeholder":"","help":""},{"id":"sample_rows","label":"예시 데이터 줄 수","promptLabel":"예시 데이터 줄 수","type":"number","section":"content","options":[],"required":false,"placeholder":"10","help":"빈 양식만 원하면 0으로 적어 주세요."}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"features","label":"넣을 기능","promptLabel":"넣을 기능","type":"multiselect","section":"design","options":["첫 줄 고정","필터","드롭다운 선택칸","인쇄 영역 설정","시트 보호"],"required":false,"placeholder":"","help":""},{"id":"conditional","label":"색으로 강조할 조건","promptLabel":"색으로 강조할 조건","type":"textarea","section":"design","options":[],"required":false,"placeholder":"예) 사용률 100% 넘으면 빨간색","help":""},{"id":"charts","label":"넣고 싶은 차트","promptLabel":"넣고 싶은 차트","type":"multiselect","section":"design","options":["막대 차트","꺾은선 차트","원형 차트","필요 없음"],"required":false,"placeholder":"","help":""},{"id":"number_format","label":"숫자 표시 방식","promptLabel":"숫자 표시 방식","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 천 단위 쉼표, 원 단위","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"word","name":"워드","description":"기획서, 보고서, 공문, 회의록","output":".docx 파일. 파일을 만들 수 없다면 제목 구조가 살아 있는 완성 원고로 써 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 부서장, 협력사 담당자","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"doc_form","label":"문서 양식","promptLabel":"문서 양식","type":"select","section":"content","options":["보고서","기획서","공문","회의록","안내문","기타"],"required":true,"placeholder":"","help":""},{"id":"outline","label":"목차","promptLabel":"목차","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 1. 개요 / 2. 현황 / 3. 문제점 / 4. 개선안 / 5. 일정","help":""},{"id":"pages","label":"분량 (쪽)","promptLabel":"분량(쪽)","type":"number","section":"content","options":[],"required":false,"placeholder":"3","help":""},{"id":"key_points","label":"꼭 담을 내용","promptLabel":"꼭 담을 내용","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 개선안은 3가지, 각각 비용과 효과 포함","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"tone","label":"글 말투","promptLabel":"글 말투","type":"select","section":"design","options":["격식체 (~합니다)","개조식 (~함)","부드러운 존댓말","친근한 말투"],"required":false,"placeholder":"","help":""},{"id":"elements","label":"넣을 요소","promptLabel":"넣을 요소","type":"multiselect","section":"design","options":["표","머리말/꼬리말","쪽 번호","자동 목차","각주"],"required":false,"placeholder":"","help":""},{"id":"font","label":"글자 크기·글꼴 규칙","promptLabel":"글자 크기·글꼴 규칙","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 본문 11pt, 제목 14pt 굵게","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"email","name":"이메일","description":"업무 메일, 안내 메일","output":"메일 제목과 본문. 바로 복사해 붙여넣을 수 있게 써 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 마케팅팀 김과장님","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"relation","label":"받는 사람과의 관계","promptLabel":"받는 사람과의 관계","type":"select","section":"content","options":["상사","동료","다른 부서","고객사","외부 협력사"],"required":true,"placeholder":"","help":""},{"id":"request","label":"전달하거나 요청할 내용","promptLabel":"전달하거나 요청할 내용","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 다음 주 회의 자료를 금요일까지 보내 달라고 요청","help":""},{"id":"deadline","label":"회신 기한","promptLabel":"회신 기한","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 10월 30일(금) 오후 3시","help":""},{"id":"cc","label":"참조할 사람","promptLabel":"참조할 사람","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 팀장님","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"tone","label":"말투","promptLabel":"말투","type":"select","section":"design","options":["정중한 격식체","부드러운 존댓말","간결한 업무체"],"required":false,"placeholder":"","help":""},{"id":"length","label":"길이","promptLabel":"길이","type":"select","section":"design","options":["3줄 이내","짧게 (5~8줄)","자세하게"],"required":false,"placeholder":"","help":""},{"id":"subject","label":"메일 제목","promptLabel":"메일 제목","type":"select","section":"design","options":["제목도 만들어 줘","본문만"],"required":false,"placeholder":"","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"hwp","name":"한글(HWP)","description":"공문, 내부 보고서","output":"한글(HWP)에 그대로 붙여 넣을 수 있는 완성 원고. 표는 칸이 맞게 정리하고, 제목·번호 체계(1. → 가. → 1))를 지켜 줘. .hwp 파일을 만들 수 있으면 파일로도 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 유관 부서장, 대외 기관 담당자","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"doc_form","label":"문서 양식","promptLabel":"문서 양식","type":"select","section":"content","options":["공문(시행문)","내부 보고서","기안문","결과 보고서","계획서","기타"],"required":true,"placeholder":"","help":""},{"id":"outline","label":"목차·항목","promptLabel":"목차·항목","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 1. 추진 배경 / 2. 현황 / 3. 추진 계획 / 4. 협조 요청 사항","help":""},{"id":"official_items","label":"공문에 들어갈 항목","promptLabel":"공문에 들어갈 항목","type":"multiselect","section":"content","options":["문서 번호","시행 일자","수신·참조","결재란","붙임 목록","발신 명의"],"required":false,"placeholder":"","help":"공문이 아니면 비워 두세요."},{"id":"pages","label":"분량 (쪽)","promptLabel":"분량(쪽)","type":"number","section":"content","options":[],"required":false,"placeholder":"2","help":""},{"id":"key_points","label":"꼭 담을 내용","promptLabel":"꼭 담을 내용","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 협조 요청 기한 11월 10일, 담당자 연락처","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"tone","label":"글 말투","promptLabel":"글 말투","type":"select","section":"design","options":["공문체 (~함, ~바람)","격식체 (~합니다)","개조식 (~함)","부드러운 존댓말","친근한 말투"],"required":false,"placeholder":"","help":""},{"id":"numbering","label":"번호 체계","promptLabel":"번호 체계","type":"select","section":"design","options":["1. → 가. → 1)","Ⅰ. → 1. → 가.","번호 없이"],"required":false,"placeholder":"","help":""},{"id":"font","label":"글자 크기·글꼴 규칙","promptLabel":"글자 크기·글꼴 규칙","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 본문 휴먼명조 13pt, 줄간격 160%","help":""},{"id":"tables","label":"표 사용","promptLabel":"표 사용","type":"select","section":"design","options":["표를 적극적으로 사용","필요한 곳만","표 없이 글로만"],"required":false,"placeholder":"","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"pdf","name":"PDF","description":"배포용 자료, 안내문","output":"PDF로 저장할 수 있는 완성 문서. 파일을 만들 수 없다면 쪽마다 들어갈 제목·본문·배치(레이아웃) 지시를 정리해 줘. 인쇄해도 깨지지 않게 여백과 글자 크기를 정해 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 전 직원, 신규 입사자, 고객사","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"pdf_kind","label":"자료 종류","promptLabel":"자료 종류","type":"select","section":"content","options":["안내문","소개서·브로슈어","보고서","매뉴얼","포스터·전단","기타"],"required":true,"placeholder":"","help":""},{"id":"page_count","label":"쪽 수","promptLabel":"쪽 수","type":"number","section":"content","options":[],"required":true,"placeholder":"4","help":""},{"id":"outline","label":"쪽별 구성","promptLabel":"쪽별 구성","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 1쪽 표지 / 2쪽 핵심 안내 / 3쪽 일정 / 4쪽 문의처","help":""},{"id":"key_points","label":"꼭 담을 내용","promptLabel":"꼭 담을 내용","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 신청 기간 11/1~11/15, 문의 내선 1234","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"paper","label":"용지","promptLabel":"용지","type":"select","section":"design","options":["A4 세로","A4 가로","화면용 16:9"],"required":false,"placeholder":"","help":""},{"id":"usage","label":"주로 보는 방법","promptLabel":"주로 보는 방법","type":"select","section":"design","options":["인쇄해서 배포","메일·메신저로 화면에서 봄","둘 다"],"required":false,"placeholder":"","help":""},{"id":"mood","label":"디자인 분위기","promptLabel":"디자인 분위기","type":"select","section":"design","options":["깔끔한 비즈니스","따뜻하고 친근한","강렬하고 임팩트 있는","미니멀"],"required":false,"placeholder":"","help":""},{"id":"colors","label":"쓰고 싶은 색","promptLabel":"쓰고 싶은 색","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 회사 남색 + 회색","help":""},{"id":"tone","label":"글 말투","promptLabel":"글 말투","type":"select","section":"design","options":["격식체 (~합니다)","개조식 (~함)","부드러운 존댓말","친근한 말투"],"required":false,"placeholder":"","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"md","name":"MD 파일","description":"매뉴얼, 위키, 정리 노트","output":"마크다운(.md) 원문. 제목(#), 목록(-), 표(|), 코드 블록(```)을 마크다운 문법 그대로 써서 복사해 바로 저장할 수 있게 해 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 팀 신규 입사자, 개발자, 전 직원","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"md_kind","label":"문서 종류","promptLabel":"문서 종류","type":"select","section":"content","options":["업무 매뉴얼","사내 위키 문서","회의·학습 정리 노트","README(프로젝트 소개)","FAQ","기타"],"required":true,"placeholder":"","help":""},{"id":"outline","label":"제목 구조(목차)","promptLabel":"제목 구조(목차)","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 개요 / 준비물 / 단계별 방법 / 자주 하는 실수 / 문의처","help":""},{"id":"length","label":"분량","promptLabel":"분량","type":"select","section":"content","options":["짧게 (한 화면)","보통 (2~3 화면)","자세하게"],"required":false,"placeholder":"","help":""},{"id":"key_points","label":"꼭 담을 내용","promptLabel":"꼭 담을 내용","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 신청 화면 주소, 승인까지 걸리는 시간","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"elements","label":"넣을 요소","promptLabel":"넣을 요소","type":"multiselect","section":"design","options":["목차","표","체크리스트","코드 블록","주의·팁 상자","링크 모음"],"required":false,"placeholder":"","help":""},{"id":"level","label":"설명 수준","promptLabel":"설명 수준","type":"select","section":"design","options":["처음 보는 사람도 따라 할 수 있게","핵심만 간단히","전문가용"],"required":false,"placeholder":"","help":""},{"id":"tone","label":"글 말투","promptLabel":"글 말투","type":"select","section":"design","options":["격식체 (~합니다)","개조식 (~함)","부드러운 존댓말","친근한 말투"],"required":false,"placeholder":"","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"diagram","name":"도식화 자료","description":"흐름도, 조직도, 구조도","output":"Mermaid 코드로 된 도식 (```mermaid 블록). 그대로 그릴 수 없다면 상자·화살표 목록과 배치 설명을 함께 줘. 상자 글자는 짧게(15자 이내) 써 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 임원 보고, 신규 입사자 교육","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"diagram_kind","label":"도식 종류","promptLabel":"도식 종류","type":"select","section":"content","options":["업무 흐름도","조직도","시스템 구조도","마인드맵","타임라인·일정","비교표·매트릭스"],"required":true,"placeholder":"","help":""},{"id":"elements","label":"들어갈 단계·요소","promptLabel":"들어갈 단계·요소","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 신청 → 팀장 승인 → 인사팀 검토 → 완료","help":"순서가 있으면 화살표(→)로 적어 주세요."},{"id":"relations","label":"연결 관계·갈림길","promptLabel":"연결 관계·갈림길","type":"textarea","section":"content","options":[],"required":false,"placeholder":"예) 팀장이 반려하면 다시 신청으로 돌아감","help":""},{"id":"groups","label":"묶을 그룹(구역)","promptLabel":"묶을 그룹(구역)","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 신청자 / 팀장 / 인사팀으로 칸 나누기","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"direction","label":"방향","promptLabel":"방향","type":"select","section":"design","options":["위에서 아래로","왼쪽에서 오른쪽으로","가운데에서 바깥으로"],"required":false,"placeholder":"","help":""},{"id":"style","label":"모양","promptLabel":"모양","type":"select","section":"design","options":["단순한 상자와 화살표","색으로 구역 구분","아이콘 포함"],"required":false,"placeholder":"","help":""},{"id":"colors","label":"쓰고 싶은 색","promptLabel":"쓰고 싶은 색","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 단계마다 다른 파스텔 색","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"icon","name":"아이콘","description":"서비스·문서용 아이콘","output":"아이콘마다 SVG 코드(24×24 기준, viewBox 포함). 그릴 수 없다면 이미지 생성 AI에 넣을 영어 프롬프트를 아이콘마다 한 줄씩 써 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 사내 서비스 사용자, 발표 청중","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"icon_list","label":"만들 아이콘과 의미","promptLabel":"만들 아이콘과 의미","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 결재(도장) / 일정(달력) / 알림(종) / 설정(톱니바퀴)","help":"아이콘마다 '이름(뜻)'으로 적어 주세요."},{"id":"count","label":"개수","promptLabel":"개수","type":"number","section":"content","options":[],"required":false,"placeholder":"4","help":""},{"id":"where","label":"쓸 곳","promptLabel":"쓸 곳","type":"select","section":"content","options":["웹·앱 화면 메뉴","발표 자료","문서·보고서","인쇄물"],"required":true,"placeholder":"","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"style","label":"스타일","promptLabel":"스타일","type":"select","section":"design","options":["선(라인)","면(채움)","선+포인트 색","둥근 손그림 느낌"],"required":false,"placeholder":"","help":""},{"id":"colors","label":"색","promptLabel":"색","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 검정 한 가지, 포인트만 주황","help":""},{"id":"size","label":"크기","promptLabel":"크기","type":"select","section":"design","options":["24px","32px","48px","64px 이상"],"required":false,"placeholder":"","help":""},{"id":"consistency","label":"통일할 점","promptLabel":"통일할 점","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 선 굵기 2px, 모서리 둥글게","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]},{"id":"image","name":"이미지","description":"표지, 삽화, 배너","output":"이미지 1장(또는 요청한 장수). 직접 그릴 수 없다면 이미지 생성 AI에 넣을 상세 프롬프트(한국어 설명 + 영어 프롬프트)를 써 줘.","groups":[{"id":"basic","title":"기본 정보","attachments":false,"questions":[{"id":"title","label":"문서 제목","promptLabel":"문서 제목","type":"text","section":"purpose","options":[],"required":true,"placeholder":"예) 3분기 실적 보고","help":""},{"id":"purpose","label":"이 문서로 이루고 싶은 것","promptLabel":"목적","type":"textarea","section":"purpose","options":[],"required":true,"placeholder":"예) 임원진에게 3분기 성과를 보고하고 4분기 예산 승인을 받는다","help":""},{"id":"background","label":"배경 설명","promptLabel":"배경","type":"textarea","section":"purpose","options":[],"required":false,"placeholder":"예) 신규 고객이 늘어 매출이 12% 성장했다","help":"AI가 상황을 이해할 수 있게 짧게 적어 주세요."},{"id":"audience","label":"읽는 사람 (받는 사람)","promptLabel":"대상","type":"text","section":"audience","options":[],"required":true,"placeholder":"예) 사내 게시판을 보는 직원, 행사 참가자","help":""},{"id":"audience_level","label":"읽는 사람이 이 내용을 얼마나 알고 있나요?","promptLabel":"대상의 이해 수준","type":"select","section":"audience","options":["처음 접함","대략 알고 있음","잘 알고 있음 (전문가)"],"required":false,"placeholder":"","help":""}]},{"id":"content","title":"내용","attachments":false,"questions":[{"id":"image_use","label":"용도","promptLabel":"용도","type":"select","section":"content","options":["보고서·PPT 표지","본문 삽화","웹·SNS 배너","포스터","썸네일","기타"],"required":true,"placeholder":"","help":""},{"id":"subject","label":"들어갈 장면·요소","promptLabel":"들어갈 장면·요소","type":"textarea","section":"content","options":[],"required":true,"placeholder":"예) 회의실에서 노트북을 보며 웃는 직원 3명, 창밖은 오후 햇살","help":""},{"id":"text_in_image","label":"이미지 안에 넣을 글자","promptLabel":"이미지 안에 넣을 글자","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 2026 하반기 워크숍","help":"글자가 없으면 비워 두세요. AI는 글자를 틀리게 그리기도 해요."},{"id":"avoid_elements","label":"넣지 말아야 할 것","promptLabel":"넣지 말아야 할 것","type":"text","section":"content","options":[],"required":false,"placeholder":"예) 실제 인물 얼굴, 경쟁사 로고","help":""}]},{"id":"design","title":"디자인·형식","attachments":false,"questions":[{"id":"ratio","label":"크기·비율","promptLabel":"크기·비율","type":"select","section":"design","options":["16:9 (가로)","4:3","1:1 (정사각형)","9:16 (세로)","A4 세로"],"required":false,"placeholder":"","help":""},{"id":"art_style","label":"그림체","promptLabel":"그림체","type":"select","section":"design","options":["실사 사진","깔끔한 일러스트","3D 렌더","수채화","플랫 디자인"],"required":false,"placeholder":"","help":""},{"id":"mood","label":"분위기","promptLabel":"분위기","type":"select","section":"design","options":["밝고 활기찬","차분하고 신뢰감 있는","고급스러운","따뜻하고 친근한"],"required":false,"placeholder":"","help":""},{"id":"colors","label":"주요 색","promptLabel":"주요 색","type":"text","section":"design","options":[],"required":false,"placeholder":"예) 크림색 바탕에 주황 포인트","help":""}]},{"id":"attachments","title":"첨부자료","attachments":true,"questions":[]},{"id":"extra","title":"기타 요청","attachments":false,"questions":[{"id":"must_include","label":"꼭 지켜야 할 것","promptLabel":"꼭 지켜야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 회사 이름은 '인크로스'로 표기, 숫자는 억 단위","help":""},{"id":"avoid","label":"피해야 할 것","promptLabel":"피해야 할 것","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 과장된 표현, 영어 약어 남발","help":""},{"id":"extra","label":"그 밖에 하고 싶은 말","promptLabel":"그 밖에 하고 싶은 말","type":"textarea","section":"rules","options":[],"required":false,"placeholder":"예) 초안을 2가지 버전으로 만들어 줘","help":""}]}]}];
+const ICONS = {ppt:"📊",excel:"📗",word:"📝",email:"✉️",hwp:"🏛️",pdf:"📕",md:"🗒️",diagram:"🔀",icon:"🎨",image:"🖼️"};
+const MAIN = ["ppt","excel","word","email"];
+const SECTIONS = [["purpose","목적과 배경"],["audience","읽는 사람"],["content","구성과 내용"],["design","디자인과 형식"],["rules","꼭 지킬 것 / 피할 것"]];
+const STORE = "docprompt:records";
+const $ = (s) => document.querySelector(s);
+
+// 화면은 textContent로만 채운다 (입력한 글이 HTML로 해석되지 않음)
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function toast(m) {
+  const t = $("#toast");
+  t.textContent = m;
+  t.classList.add("show");
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ---------- 기록 (이 브라우저에만 저장) ---------- */
+function loadRecords() { try { return JSON.parse(localStorage.getItem(STORE) || "[]"); } catch (e) { return []; } }
+function saveRecords(r) { try { localStorage.setItem(STORE, JSON.stringify(r)); return true; } catch (e) { return false; } }
+
+/* ---------- 프롬프트 만들기 ---------- */
+const isAnswered = (v) => Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.trim() !== "";
+const fmt = (v) => Array.isArray(v) ? v.join(", ") : v.trim();
+const bullet = (l, v) => v.includes("\n") ? "- " + l + ":\n" + v.split("\n").map((x) => "  " + x).join("\n") : "- " + l + ": " + v;
+const allQ = (doc) => doc.groups.flatMap((g) => g.questions);
+const docTitle = (a) => (typeof a.title === "string" && a.title.trim()) ? a.title.trim() : "제목 없음";
+
+function buildCore(doc, a) {
+  const lines = (sec) => allQ(doc).filter((q) => q.section === sec && q.id !== "title" && isAnswered(a[q.id])).map((q) => bullet(q.promptLabel, fmt(a[q.id])));
+  const parts = [["역할", ["너는 " + doc.name + " 작성 전문가야. 아래 요구사항에 맞춰 바로 쓸 수 있는 " + doc.name + " 초안을 만들어 줘."]]];
+  for (const [id, title] of SECTIONS) parts.push([title, lines(id)]);
+  parts.push(["결과물 요구사항", [
+    "- 최종 결과물 형식: " + doc.output,
+    "- 불확실한 내용은 지어내지 말고 [확인 필요]로 표시할 것",
+    "- 시작하기 전에 부족한 정보가 있으면 먼저 질문해 줄 것",
+    "- 완성 후 위 요구사항을 지켰는지 점검 목록을 덧붙일 것"
+  ]]);
+  let n = 0;
+  const body = parts.filter(([, l]) => l.length).map(([h, l]) => "## " + (++n) + ". " + h + "\n" + l.join("\n")).join("\n\n");
+  return "# 초안 생성 프롬프트: " + docTitle(a) + "\n\n" + body;
+}
+const cell = (s) => s.replace(/\|/g, "\\|").replace(/\n/g, " ");
+function attachSection(files) {
+  if (!files.length) return "";
+  let md = "## 첨부자료 사용 방법\n함께 올린 첨부 파일을 아래에 적힌 방법대로 활용해 줘.\n\n| 파일 | 사용 방법 |\n|---|---|\n" +
+    files.map((f) => "| 첨부자료/" + cell(f.name) + " | " + cell(f.usage.trim() || "참고 자료로 활용") + " |").join("\n");
+  const withText = files.filter((f) => f.text);
+  if (withText.length) {
+    md += "\n\n## 첨부자료 내용 (파일에서 읽어낸 내용)\n\n" +
+      withText.map((f) => "### " + f.name + "\n\n" + f.text + (f.truncated ? "\n\n(이하 생략, 원본 파일 참고)" : "")).join("\n\n");
+  }
+  return md;
+}
+
+/* ---------- 간단한 ZIP 만들기 (무압축) : 서버·라이브러리 필요 없음 ---------- */
+const CRC_TABLE = (function () {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) { let c = i; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[i] = c >>> 0; }
+  return t;
+})();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(entries) {
+  const enc = new TextEncoder(), chunks = [], central = [];
+  let off = 0;
+  const now = new Date();
+  const dt = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const tm = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  for (const e of entries) {
+    const name = enc.encode(e.path), crc = crc32(e.data), size = e.data.length;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, tm, true); h.setUint16(12, dt, true); h.setUint32(14, crc, true); h.setUint32(18, size, true);
+    h.setUint32(22, size, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(h.buffer), name, e.data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(10, 0, true); c.setUint16(12, tm, true); c.setUint16(14, dt, true); c.setUint32(16, crc, true);
+    c.setUint32(20, size, true); c.setUint32(24, size, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + size;
+  }
+  const cdSize = central.reduce((s, x) => s + x.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+  return new Blob(chunks.concat(central, [new Uint8Array(end.buffer)]), { type: "application/zip" });
+}
+function download(blob, name) {
+  const a = el("a", { href: URL.createObjectURL(blob), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+const safeName = (s) => s.replace(/[\\/:*?"<>|]/g, "_").trim().slice(0, 60) || "문서";
+
+/* ---------- 화면: 처음 ---------- */
+let state = null;
+function home() {
+  state = null;
+  const app = $("#app");
+  app.replaceChildren();
+  app.append(el("h1", {}, "어떤 문서를 만들까요?"), el("p", { class: "sub" }, "고르면 바로 질문 화면으로 넘어가요. 답을 다 쓰면 AI에 올릴 파일을 만들어 드려요."));
+  const card = (d) => el("button", { class: "card", onclick: () => openForm(d.id) }, el("div", { class: "ic" }, ICONS[d.id] || "📄"), el("b", {}, d.name), el("span", {}, d.description));
+  app.append(el("div", { class: "grid" }, DOC_TYPES.filter((d) => MAIN.includes(d.id)).map(card)));
+  app.append(el("h2", {}, "다른 문서"), el("div", { class: "grid" }, DOC_TYPES.filter((d) => !MAIN.includes(d.id)).map(card)));
+  const recs = loadRecords().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  if (recs.length) {
+    app.append(el("h2", {}, "내 기록 (이 브라우저에만 저장돼요)"));
+    app.append(el("ul", { class: "hist" }, recs.map((r) => {
+      const d = DOC_TYPES.find((x) => x.id === r.docType);
+      return el("li", {},
+        el("div", { class: "t", onclick: () => openForm(r.docType, r.id) }, el("b", {}, docTitle(r.answers)), el("small", {}, (d ? d.name : r.docType) + " · " + new Date(r.updatedAt).toLocaleString("ko-KR"))),
+        el("button", { class: "btn sm", onclick: () => openForm(r.docType, r.id, true) }, "복사해서 새로"),
+        el("button", { class: "btn sm", onclick: () => { if (confirm("이 기록을 삭제할까요?")) { saveRecords(loadRecords().filter((x) => x.id !== r.id)); home(); } } }, "삭제"));
+    })));
+  }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 화면: 질문 ---------- */
+function openForm(docId, recId, asCopy) {
+  const doc = DOC_TYPES.find((d) => d.id === docId);
+  const rec = recId ? loadRecords().find((r) => r.id === recId) : null;
+  state = {
+    doc: doc,
+    id: (rec && !asCopy) ? rec.id : null,
+    answers: rec ? JSON.parse(JSON.stringify(rec.answers)) : {},
+    files: rec ? (rec.files || []).map((f) => Object.assign({}, f, { file: null })) : [],
+    dirty: false
+  };
+  renderForm();
+}
+function missing() { return allQ(state.doc).filter((q) => q.required && !isAnswered(state.answers[q.id])); }
+function promptMd() { return [buildCore(state.doc, state.answers), attachSection(state.files)].filter(Boolean).join("\n\n") + "\n"; }
+function updatePreview() {
+  $("#pv").textContent = promptMd();
+  const m = missing(), total = allQ(state.doc).filter((q) => q.required).length;
+  $("#prog").textContent = "필수 " + (total - m.length) + " / " + total;
+  for (const b of document.querySelectorAll(".needs-complete")) b.disabled = m.length > 0;
+  $("#hint").textContent = m.length ? "꼭 답해야 하는 질문 " + m.length + "개가 남았어요 (" + m.map((q) => q.label).join(", ") + ")." : "";
+}
+function field(q) {
+  const a = state.answers;
+  const set = (v) => { a[q.id] = v; state.dirty = true; updatePreview(); };
+  let input;
+  if (q.type === "text" || q.type === "number") {
+    input = el("input", { type: q.type === "number" ? "number" : "text", id: "q-" + q.id, placeholder: q.placeholder, value: a[q.id] || "", oninput: (e) => set(e.target.value) });
+  } else if (q.type === "textarea") {
+    input = el("textarea", { id: "q-" + q.id, placeholder: q.placeholder, oninput: (e) => set(e.target.value) });
+    input.value = a[q.id] || "";
+  } else {
+    const multi = q.type === "multiselect";
+    const wrap = el("div", { class: "chips" });
+    const paint = () => {
+      wrap.replaceChildren(...q.options.map((o) => {
+        const on = multi ? (a[q.id] || []).includes(o) : a[q.id] === o;
+        return el("button", { type: "button", class: "chip" + (on ? " on" : ""), onclick: () => {
+          if (multi) { const s = new Set(a[q.id] || []); if (s.has(o)) s.delete(o); else s.add(o); set(Array.from(s)); }
+          else set(a[q.id] === o ? "" : o);
+          paint();
+        } }, o);
+      }));
+    };
+    paint();
+    input = wrap;
+  }
+  return el("div", { class: "q" },
+    el("label", { class: "l", for: "q-" + q.id }, q.label, el("span", { class: q.required ? "req" : "opt" }, q.required ? "필수" : "선택")),
+    q.help ? el("p", { class: "help" }, q.help) : null,
+    input);
+}
+async function addFiles(list) {
+  for (const f of list) {
+    const item = { name: f.name, size: f.size, usage: "", file: f, text: "", truncated: false };
+    if (/\.(txt|md|csv|tsv|json)$/i.test(f.name) && f.size < 2000000) {
+      const t = await f.text();
+      item.text = t.length > 30000 ? t.slice(0, 30000) : t;
+      item.truncated = t.length > 30000;
+    }
+    if (state.files.some((x) => x.name === item.name)) item.name = item.name.replace(/(\.[^.]*)?$/, " (" + (state.files.length + 1) + ")$1");
+    state.files.push(item);
+  }
+  state.dirty = true;
+  paintFiles();
+  updatePreview();
+}
+function paintFiles() {
+  const ul = $("#files");
+  if (!ul) return;
+  ul.replaceChildren(...state.files.map((f, i) => el("li", {},
+    el("span", { class: "n" }, f.name),
+    el("input", { type: "text", placeholder: "예) 표지 이미지로 사용, 이 표의 숫자 활용", value: f.usage, oninput: (e) => { f.usage = e.target.value; state.dirty = true; updatePreview(); } }),
+    el("button", { class: "btn sm", onclick: () => { state.files.splice(i, 1); paintFiles(); updatePreview(); } }, "삭제"))));
+  ul.style.display = state.files.length ? "" : "none";
+}
+function renderForm() {
+  const doc = state.doc, app = $("#app");
+  app.replaceChildren();
+  const tabs = el("div", { class: "tabs" },
+    doc.groups.map((g) => el("button", { class: "tab", onclick: () => document.getElementById("g-" + g.id).scrollIntoView({ behavior: "smooth", block: "start" }) }, g.title)),
+    el("span", { class: "prog", id: "prog" }));
+  const form = el("div", {});
+  for (const g of doc.groups) {
+    const fs = el("fieldset", { id: "g-" + g.id }, el("legend", {}, g.title));
+    if (g.attachments) {
+      const picker = el("input", { type: "file", multiple: true, style: "display:none", onchange: (e) => { addFiles(Array.from(e.target.files)); e.target.value = ""; } });
+      const drop = el("div", { class: "drop",
+        onclick: () => picker.click(),
+        ondragover: (e) => { e.preventDefault(); drop.classList.add("over"); },
+        ondragleave: () => drop.classList.remove("over"),
+        ondrop: (e) => { e.preventDefault(); drop.classList.remove("over"); addFiles(Array.from(e.dataTransfer.files)); } },
+        "파일을 여기로 끌어다 놓거나 눌러서 선택하세요");
+      fs.append(
+        el("p", { class: "warn" }, "⚠️ 고객 정보, 개인정보, 비밀번호 등 민감한 자료는 올리지 마세요. 이 파일들은 나중에 외부 AI에 올라갑니다."),
+        drop, picker,
+        el("ul", { class: "files", id: "files" }),
+        el("p", { class: "help", style: "margin-top:8px" }, "텍스트·CSV·MD 파일은 내용이 지시서에 함께 들어가요. 엑셀·워드·이미지·PDF는 파일만 ZIP에 담기고, 어디에 쓸지 한 줄로 적어 두면 돼요."));
+    } else {
+      fs.append(...g.questions.map(field));
+    }
+    form.append(fs);
+  }
+  const aside = el("aside", { class: "aside" },
+    el("div", { class: "prev" }, el("small", {}, "미리보기 · 초안생성프롬프트.md"), el("pre", { id: "pv" })),
+    el("div", { class: "actions" },
+      el("button", { class: "btn primary needs-complete", onclick: renderResult }, "결과 보기 · 복사하기 →"),
+      el("button", { class: "btn", onclick: save }, "임시 저장"),
+      el("button", { class: "btn", onclick: () => { if (!state.dirty || confirm("저장하지 않은 내용이 사라져요. 나갈까요?")) home(); } }, "← 처음으로"),
+      el("p", { class: "help", id: "hint" })));
+  app.append(el("h1", {}, doc.name), el("p", { class: "sub" }, doc.description), tabs, el("div", { class: "layout" }, form, aside));
+  paintFiles();
+  updatePreview();
+  window.scrollTo(0, 0);
+}
+/* ---------- 화면: 결과 (복사해서 AI 채팅창에 붙여넣기) ---------- */
+async function copyText(text, area) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* 아래 방법으로 다시 시도 */ }
+  try { area.focus(); area.select(); const ok = document.execCommand("copy"); area.setSelectionRange(0, 0); return ok; } catch (e) { return false; }
+}
+function renderResult() {
+  save();
+  const app = $("#app"), md = promptMd();
+  app.replaceChildren();
+  const area = el("textarea", { class: "result", readonly: true, spellcheck: "false" });
+  area.value = md;
+  const copyBtn = el("button", { class: "btn primary big", onclick: async () => {
+    const ok = await copyText(md, area);
+    copyBtn.textContent = ok ? "✓ 복사했어요! AI 채팅창에 붙여넣으세요" : "복사하지 못했어요. 아래 글을 직접 드래그해서 복사해 주세요";
+    setTimeout(() => { copyBtn.textContent = "📋 전체 복사"; }, 3500);
+  } }, "📋 전체 복사");
+  const fileOnly = state.files.filter((f) => !f.text);
+  app.append(
+    el("h1", {}, "완성됐어요! 복사해서 AI에 붙여넣으세요"),
+    el("p", { class: "sub" }, docTitle(state.answers) + " · " + state.doc.name),
+    el("ol", { class: "steps" },
+      el("li", {}, el("b", {}, "아래 [전체 복사]"), "를 누릅니다."),
+      el("li", {}, "ChatGPT·Claude 같은 AI 채팅창을 열고 ", el("b", {}, "붙여넣기(Ctrl+V)"), " 한 뒤 보냅니다."),
+      el("li", {}, "AI가 부족한 정보를 물어보면 답해 주세요. 그러면 초안이 완성됩니다.")),
+    fileOnly.length ? el("p", { class: "warn" }, "📎 아래 파일은 글로 옮겨지지 않았어요. AI 채팅창에 직접 첨부해 주세요: " + fileOnly.map((f) => f.name).join(", ")) : null,
+    el("div", { class: "resultbar" }, copyBtn),
+    area,
+    el("p", { class: "warn" }, "고객 정보·개인정보·비밀번호가 들어 있지 않은지 한 번 더 확인하세요. 붙여넣은 내용은 외부 AI 서비스로 전송됩니다."),
+    el("div", { class: "resultbar" },
+      el("button", { class: "btn", onclick: () => renderForm() }, "← 답변 고치기"),
+      el("button", { class: "btn", onclick: () => download(new Blob([md], { type: "text/markdown" }), "초안생성프롬프트.md") }, ".md 파일로 받기"),
+      el("button", { class: "btn", onclick: exportZip }, "ZIP으로 받기 (첨부 파일 포함)"),
+      el("button", { class: "btn", onclick: home }, "새 문서 만들기")));
+  window.scrollTo(0, 0);
+}
+function save() {
+  const recs = loadRecords(), now = new Date().toISOString();
+  const files = state.files.map((f) => ({ name: f.name, size: f.size, usage: f.usage, text: f.text, truncated: f.truncated }));
+  let r = state.id && recs.find((x) => x.id === state.id);
+  if (r) { r.answers = state.answers; r.files = files; r.updatedAt = now; }
+  else {
+    r = { id: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()), docType: state.doc.id, answers: state.answers, files: files, createdAt: now, updatedAt: now };
+    recs.push(r);
+    state.id = r.id;
+  }
+  if (saveRecords(recs)) { state.dirty = false; toast("저장했어요"); } else toast("저장하지 못했어요 (브라우저 저장 공간 부족)");
+}
+async function exportZip() {
+  const folder = safeName(docTitle(state.answers)) + "_" + state.doc.name, enc = new TextEncoder();
+  const entries = [{ path: folder + "/초안생성프롬프트.md", data: enc.encode(promptMd()) }];
+  for (const f of state.files) if (f.file) entries.push({ path: folder + "/첨부자료/" + f.name, data: new Uint8Array(await f.file.arrayBuffer()) });
+  download(makeZip(entries), folder + ".zip");
+  save();
+  toast(state.files.some((f) => !f.file) ? "ZIP을 받았어요. 저장된 기록에서 불러온 파일은 다시 올려야 담겨요" : "ZIP을 받았어요");
+}
+
+$("#logo").onclick = () => { if (!state || !state.dirty || confirm("저장하지 않은 내용이 사라져요. 나갈까요?")) home(); };
+$("#helpBtn").onclick = () => $("#help").showModal();
+window.addEventListener("beforeunload", (e) => { if (state && state.dirty) { e.preventDefault(); e.returnValue = ""; } });
+home();
+</script>
+</body>
+</html>
